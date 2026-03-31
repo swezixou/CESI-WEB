@@ -140,16 +140,15 @@ class CompanyController extends Controller
     // SFx 5 – Évaluer (admin + pilote selon matrice)
     public function review(string $id): void
     {
-        $this->requireRole('admin', 'pilot');
-        $this->validateCsrf();
+    $this->requireRole('admin', 'pilot');
+    $this->validateCsrf();
 
-        $rating  = max(1, min(5, (int)$this->post('rating', 3)));
-        $comment = trim($this->post('comment', ''));
+    $rating  = max(1, min(5, (int)$this->post('rating')));
+    $comment = $this->post('comment');
 
-        // On utilise l'ID user directement comme reviewer
-        $this->companyModel->addReviewByUser((int)$id, Auth::id(), $rating, $comment);
-        Flash::success('Évaluation enregistrée !');
-        $this->redirect('/companies/' . $id);
+    $this->companyModel->addReview((int)$id, Auth::id(), $rating, $comment);
+    Flash::success('Votre évaluation a été enregistrée !');
+    $this->redirect('/companies/' . $id);
     }
 
     // SFx 6 – Supprimer (admin + pilote selon matrice)
