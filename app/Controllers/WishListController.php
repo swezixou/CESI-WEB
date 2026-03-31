@@ -67,7 +67,7 @@ class WishlistController extends Controller
             $this->json(['status' => 'removed']);
         } else {
             Flash::success('Offre retirée de votre wish-list.');
-            $this->redirect('/wishlist');
+            $this->redirect('/offers/' . $offerId);
         }
     }
 
