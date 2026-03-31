@@ -89,17 +89,63 @@ define('DB_PASS', 'votre_mot_de_passe');
 ```apache
 <VirtualHost *:80>
     ServerName stageconnect.local
+    ServerAlias www.stageconnect.local
     DocumentRoot /var/www/stageconnect/public
+
+    # Redirection vers HTTPS
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=301,L]
+
     <Directory /var/www/stageconnect/public>
+        Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
+        
+        # Gestion du index.php (Front Controller)
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^ index.php [QSA,L]
     </Directory>
-</VirtualHost>
 
-# vhost assets statiques (STx 9)
-<VirtualHost *:80>
-    ServerName static.stageconnect.local
-    DocumentRoot /var/www/stageconnect/public/assets
+    ErrorLog ${APACHE_LOG_DIR}/stageconnect_error.log
+    CustomLog ${APACHE_LOG_DIR}/stageconnect_access.log combined
+</VirtualHost>
+```
+
+```apache
+<VirtualHost *:443>
+    ServerName stageconnect.local
+    ServerAlias www.stageconnect.local
+    DocumentRoot /var/www/stageconnect/public
+
+    # SSL Configuration
+    SSLEngine on
+    SSLCertificateFile    /etc/ssl/stageconnect/stageconnect.crt
+    SSLCertificateKeyFile /etc/ssl/stageconnect/stageconnect.key
+
+    # Sécurité SSL standard
+    SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+    SSLCipherSuite HIGH:!aNULL:!MD5
+
+    <Directory /var/www/stageconnect/public>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+
+        # Gestion du index.php (Front Controller)
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^ index.php [QSA,L]
+    </Directory>
+
+    # Headers de sécurité
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    
+    ErrorLog ${APACHE_LOG_DIR}/stageconnect_ssl_error.log
+    CustomLog ${APACHE_LOG_DIR}/stageconnect_ssl_access.log combined
 </VirtualHost>
 ```
 
